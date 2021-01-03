@@ -11,3 +11,8 @@ libraryDependencies += "org.scalamock" %% "scalamock" % "4.4.0" % Test
 libraryDependencies += "org.slf4j" % "slf4j-simple" % "1.7.9" % Test
 libraryDependencies += "org.clapper" %% "grizzled-slf4j" % "1.3.4"
 
+//testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-f", "result.txt")
+
+coverageHighlighting := true
+
+logBuffered in Test := false
