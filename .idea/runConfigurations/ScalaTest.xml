@@ -1,7 +1,7 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="ScalaTest" type="ScalaTestRunConfiguration" factoryName="ScalaTest" show_console_on_std_err="false" show_console_on_std_out="false">
+  <configuration default="false" name="ScalaTest" type="ScalaTestRunConfiguration" factoryName="ScalaTest" singleton="false" show_console_on_std_err="false" show_console_on_std_out="false">
     <module name="fabrication-engine" />
-    <option name="allowRunningInParallel" value="false" />
+    <option name="allowRunningInParallel" value="true" />
     <option name="selectedOptions">
       <list />
     </option>
