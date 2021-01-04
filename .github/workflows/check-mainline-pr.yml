@@ -1,29 +1,44 @@
-name: Testing and Coverage
+name: check mainline pull requests
 
 on:
   pull_request:
-    branches: [ mainline ]
+    branches:
+      - mainline
 
 jobs:
-  build:
-    name: Build and Test
+  check-pr:
+    name: Check pull request
 
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout git repo
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Check commit format
+        uses: wagoid/commitlint-github-action@v2
+        id: clint
+
+      - name: Generate version
+        id: genver
+        uses: paulhatch/semantic-version@v3.2
+        with:
+          branch: "mainline"
+          major_pattern: "!:"
+          minor_pattern: "feat:"
+          format: "${major}.${minor}.${patch}-mainline${increment}"
+          short_tags: true
+          bump_each_commit: false
 
       - name: Set up JDK 1.8
         uses: actions/setup-java@v1
         with:
           java-version: 1.8
 
-      - name: Run tests
-        run: sbt test
-
-      - name: Create coverage report
-        run: sbt coverageReport
+      - name: Test and coverage report
+        run: sbt test coverageReport
 
       - name: Codecov push report
         uses: codecov/codecov-action@v1

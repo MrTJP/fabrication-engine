@@ -1,7 +1,7 @@
 // Package details
 organization := "io.github.mrtjp"
 name := "fabrication-engine"
-version := "0.0.3-SNAPSHOT"
+version := sys.env.getOrElse("GH_ACTIONS_VER", "0.0.0.1") //Set by Github Action
 
 // Compiler settings
 scalaVersion := "2.13.1"
@@ -25,7 +25,6 @@ credentials += Credentials("GitHub Package Registry", "maven.pkg.github.com", "m
 
 pomIncludeRepository := (_ => false)
 publishMavenStyle := true
-//publishConfiguration := publishConfiguration.value.withOverwrite(true)
 
 scmInfo := Some(
     ScmInfo(
