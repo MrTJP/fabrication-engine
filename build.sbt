@@ -21,7 +21,7 @@ logBuffered in Test := false
 // Publishing
 externalResolvers += "GitHub Package Registry" at "https://maven.pkg.github.com/mrtjp/fabrication-engine"
 publishTo := Some("GitHub Package Registry" at "https://maven.pkg.github.com/mrtjp/fabrication-engine")
-credentials += Credentials("GitHub mrtjp access", "maven.pkg.github.com", "mrtjp", sys.env("GH_TOKEN"))
+credentials += Credentials("GitHub mrtjp access", "maven.pkg.github.com", "mrtjp", sys.env.getOrElse("GH_TOKEN", "password"))
 publishMavenStyle := true
 scmInfo := Some(
     ScmInfo(
