@@ -19,4 +19,22 @@ class PathFinderNodeSpec extends FEFlatSpec
             }
         }
     }
+
+    "A PathFinderNode" should "compare correctly" in {
+        val nodeA = PathFinderNode(new TileCoord(1, 1, 1), 1, 1)
+        val nodeB = PathFinderNode(new TileCoord(1, 1, 1), 1, 1)
+
+        val nodeC = PathFinderNode(new TileCoord(1, 1, 2), 1, 1)
+        val nodeD = PathFinderNode(new TileCoord(1, 1, 1), 2, 1)
+        val nodeE = PathFinderNode(new TileCoord(1, 1, 1), 1, 2)
+
+        val someObject = new Object
+
+        assert(nodeA == nodeB)
+        assert(nodeA != nodeC)
+        assert(nodeA != nodeD)
+        assert(nodeA != nodeE)
+
+        assert(nodeA != someObject)
+    }
 }
