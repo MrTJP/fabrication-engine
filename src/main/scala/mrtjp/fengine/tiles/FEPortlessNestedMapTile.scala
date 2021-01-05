@@ -1,4 +1,5 @@
 package mrtjp.fengine.tiles
+
 import mrtjp.fengine.assemble.{ICAssembler, ICAssemblerPathFinder}
 
 import scala.collection.mutable
@@ -79,15 +80,6 @@ trait FEPortlessNestedMapTile extends FETile
             remaps += (insideOutputReg -> outsideOutputReg)
         }
 
-        //        assembler.addTileMap(nestedTileMap, remaps)
         addMapToAssembler(assembler, remaps)
-        //        val inputs = inputRegisters.filter(_ != -1).toSeq
-        //        val outputs = outputRegisters.filter(_ != -1).toSeq
-
-        //        for (dir <- 0 until 6) if (outputRegisters(dir) != -1) {
-        //            assembler.addRegister(outputRegisters(dir), createRegister(dir))
-        //        }
-        //        val op = createGate(inputs, outputs)
-        //        assembler.addGate(gateID, op, inputs, outputs)
     }
 }

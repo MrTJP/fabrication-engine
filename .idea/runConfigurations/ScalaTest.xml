@@ -17,6 +17,9 @@
       </list>
     </option>
     <option name="searchTest" value="In whole project" />
+    <option name="showProgressMessages" value="false" />
+    <option name="testPackagePath" value="mrtjp.fengine" />
+    <option name="useSbt" value="true" />
     <option name="useUiWithSbt" value="true" />
     <option name="workingDirectory" value="$PROJECT_DIR$" />
     <method v="2">

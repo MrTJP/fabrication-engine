@@ -15,5 +15,4 @@ abstract class AssemblerScenario {
 
     val expectedRelationships:Seq[(ICGate, Seq[ICRegister], Seq[ICRegister])]
 
-//    def init():Unit
 }

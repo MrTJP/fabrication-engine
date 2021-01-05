@@ -39,7 +39,7 @@ import mrtjp.fengine.testimpl._
   *     2    o1
   *     (y)
   */
-class AssemblerScenarioAdjacentNestedMap extends AssemblerScenario
+class AssemblerScenarioAdjacentNestedMap(n1_precompile:Boolean, n2_precompile:Boolean) extends AssemblerScenario
 {
     private def createN = new TTestFETileMap {
         override val renderWidth:Int = 1
@@ -84,12 +84,14 @@ class AssemblerScenarioAdjacentNestedMap extends AssemblerScenario
 
         //first nested map
         val n1Coord = new TileCoord(0, 2, 0)
-        val n1 = new PortlessNestedTileMapTile("n", bitNorth, bitSouth, Map((dirNorth, n1Map.i1RegID)), Map((dirSouth, n1Map.o1RegID)), n1Map)
+        val n1 = new PortlessNestedMapTileTestImpl("n", bitNorth, bitSouth, Map((dirNorth, n1Map.i1RegID)), Map((dirSouth, n1Map.o1RegID)), n1Map)
+        n1.usePrecompiledFlatMap = n1_precompile
         addTile(n1Coord, n1)
 
         //second nested map
         val n2Coord = new TileCoord(0, 3, 0)
-        val n2 = new PortlessNestedTileMapTile("n", bitNorth, bitSouth, Map((dirNorth, n2Map.i1RegID)), Map((dirSouth, n2Map.o1RegID)), n2Map)
+        val n2 = new PortlessNestedMapTileTestImpl("n", bitNorth, bitSouth, Map((dirNorth, n2Map.i1RegID)), Map((dirSouth, n2Map.o1RegID)), n2Map)
+        n2.usePrecompiledFlatMap = n2_precompile
         addTile(n2Coord, n2)
 
         //second gate
@@ -104,7 +106,6 @@ class AssemblerScenarioAdjacentNestedMap extends AssemblerScenario
         addTile(outputTileCoord, outputTile)
     }
 
-
     override val rootMap:TTestFETileMap = map
 
     override val expectedGates = Seq(map.g1.gate, n1Map.g1.gate, n2Map.g1.gate, map.g2.gate)
@@ -116,4 +117,12 @@ class AssemblerScenarioAdjacentNestedMap extends AssemblerScenario
         (n2Map.g1.gate, Seq(n1Map.g1.registers(dirSouth)), Seq(n2Map.g1.registers(dirSouth))),
         (map.g2.gate, Seq(n2Map.g1.registers(dirSouth)), Seq(map.g2.registers(dirSouth)))
     )
+}
+
+object AssemblerScenarioAdjacentNestedMap
+{
+    def comboIDs:Seq[Int] = 0 until 4
+
+    def createCombo(id:Int):AssemblerScenarioAdjacentNestedMap =
+        new AssemblerScenarioAdjacentNestedMap((id&1) != 0, (id&2) != 0)
 }

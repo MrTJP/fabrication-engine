@@ -95,7 +95,10 @@ class ICAssemblerSpec extends AnyFlatSpec with Logging
     "In multi-source one-sink scenario, an ICAssembler" should behave like validFlatMapAssembler(new AssemblerScenarioMultiSourceOneSink)
     "In one-source multi-sink scenario, an ICAssembler" should behave like validFlatMapAssembler(new AssemblerScenarioOneSourceMultiSink)
 
-    "In simple nested tile map scenario, an ICAssembler" should behave like validFlatMapAssembler(new AssemblerScenarioNestedTileMap)
-    "In simple nested flat map scenario, an ICAssembler" should behave like validFlatMapAssembler(new AssemblerScenarioNestedFlatMap)
-    "in adjacent nested maps scenario, an ICAssembler" should behave like validFlatMapAssembler(new AssemblerScenarioAdjacentNestedMap)
+    for (id <- AssemblerScenarioNestedTileMap.comboIDs)
+        s"In simple nested map scenario (combo $id), an ICAssembler" should behave like validFlatMapAssembler(AssemblerScenarioNestedTileMap.createCombo(id))
+
+    for (id <- AssemblerScenarioAdjacentNestedMap.comboIDs) {
+        s"In adjacent nested maps scenario (combo $id), an ICAssembler" should behave like validFlatMapAssembler(AssemblerScenarioAdjacentNestedMap.createCombo(id))
+    }
 }
