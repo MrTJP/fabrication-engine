@@ -51,6 +51,11 @@ case class TileCoord(x:Int, y:Int, z:Int)
     def *(that:TileCoord):TileCoord = multiply(that)
     def /(that:TileCoord):TileCoord = divide(that)
 
+    def +(dx:Int, dy:Int, dz:Int):TileCoord = TileCoord(x+dx, y+dy, z+dz)
+    def -(dx:Int, dy:Int, dz:Int):TileCoord = add(-dx, -dy, -dz)
+    def *(i:Int, j:Int, k:Int):TileCoord = TileCoord(x*i, y*j, z*k)
+    def /(i:Int, j:Int, k:Int):TileCoord = TileCoord(x/i, y/j, z/k)
+
     def +(that:Int):TileCoord = add(that)
     def -(that:Int):TileCoord = subtract(that)
     def *(that:Int):TileCoord = multiply(that)

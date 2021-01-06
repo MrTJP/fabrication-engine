@@ -29,7 +29,7 @@ class AssemblerScenarioSecludedSource extends AssemblerScenario
         addTile(sourceXCoord, sourceXGate)
     }
 
-    override val rootMap:TTestFETileMap = map
+    override def rootMap:TTestFETileMap = map
 
     override val expectedGates = Seq(map.sourceXGate.gate)
 

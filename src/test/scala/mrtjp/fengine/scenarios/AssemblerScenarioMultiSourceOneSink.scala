@@ -61,7 +61,7 @@ class AssemblerScenarioMultiSourceOneSink extends AssemblerScenario
         addTile(TileCoord(3, 2, 0), new PortlessWireTileImpl(bitNorth|bitWest))
     }
 
-    override val rootMap:TTestFETileMap = map
+    override def rootMap:TTestFETileMap = map
 
     override val expectedGates = Seq(
         map.sourceAGate.gate,
@@ -69,6 +69,7 @@ class AssemblerScenarioMultiSourceOneSink extends AssemblerScenario
         map.sourceCGate.gate,
         map.sinkGate.gate
     )
+
     override val expectedRegisters = Seq(
         map.sourceAGate.registers(dirSouth),
         map.sourceBGate.registers(dirSouth),

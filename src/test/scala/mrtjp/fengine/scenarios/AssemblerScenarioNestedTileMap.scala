@@ -2,7 +2,8 @@ package mrtjp.fengine.scenarios
 
 import mrtjp.fengine.TileCoord
 import mrtjp.fengine.TileCoord._
-import mrtjp.fengine.testimpl.{PortlessGateTileImpl, PortlessIOTileTestImpl, PortlessNestedTileMapTile, PortlessWireTileImpl, TTestFETileMap}
+import mrtjp.fengine.assemble.{ICAssembler, ICFlatMap}
+import mrtjp.fengine.testimpl._
 
 /**
   * Test Case: Single output gate connected to single input gate with wire
@@ -41,7 +42,7 @@ import mrtjp.fengine.testimpl.{PortlessGateTileImpl, PortlessIOTileTestImpl, Por
   *     4    O
   *     (y)
   */
-class AssemblerScenarioNestedTileMap extends AssemblerScenario
+class AssemblerScenarioNestedTileMap(n_precompile:Boolean) extends AssemblerScenario
 {
     private val submap = new TTestFETileMap {
         override val renderWidth:Int = 1
@@ -80,7 +81,8 @@ class AssemblerScenarioNestedTileMap extends AssemblerScenario
         addTile(sourceTileCoord, sourceGate)
 
         val nestedTileCoord = new TileCoord(0, 2, 0)
-        val nestedTile = new PortlessNestedTileMapTile("N", bitNorth, bitSouth, Map((dirNorth, submap.inputTileRegID)), Map((dirSouth, submap.outputTileRegID)), submap)
+        val nestedTile = new PortlessNestedMapTileTestImpl("N", bitNorth, bitSouth, Map((dirNorth, submap.inputTileRegID)), Map((dirSouth, submap.outputTileRegID)), submap)
+        nestedTile.usePrecompiledFlatMap = n_precompile
         addTile(nestedTileCoord, nestedTile)
 
         // Add driven tile at (0, 4)
@@ -93,10 +95,10 @@ class AssemblerScenarioNestedTileMap extends AssemblerScenario
             addTile(new TileCoord(0, y, 0), new PortlessWireTileImpl(bitNorth|bitSouth))
     }
 
-
-    override val rootMap:TTestFETileMap = map
+    override def rootMap:TTestFETileMap = map
 
     override val expectedGates = Seq(map.sourceGate.gate, map.sinkGate.gate, submap.gate.gate)
+
     override val expectedRegisters = Seq(map.sourceGate.registers(dirSouth), submap.gate.registers(dirSouth))
 
     override val expectedRelationships = Seq(
@@ -104,4 +106,19 @@ class AssemblerScenarioNestedTileMap extends AssemblerScenario
         (submap.gate.gate, Seq(map.sourceGate.registers(dirSouth)), Seq(submap.gate.registers(dirSouth))),
         (map.sinkGate.gate, Seq(submap.gate.registers(dirSouth)), Seq())
     )
+
+    override def assembleFlatMap:ICFlatMap = {
+        val assembler:ICAssembler = ICAssembler.newAssembler
+        assembler.addTileMap(map, Map.empty)
+        assembler.allocRegisterID(1) //Reserve a few for IO tiles
+        assembler.result()
+    }
+}
+
+object AssemblerScenarioNestedTileMap
+{
+    def comboIDs:Seq[Int] = 0 until 2
+
+    def createCombo(cID:Int):AssemblerScenarioNestedTileMap =
+        new AssemblerScenarioNestedTileMap((cID&1) != 0)
 }

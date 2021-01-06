@@ -4,7 +4,7 @@
     <option name="selectedOptions">
       <list />
     </option>
-    <option name="tasks" value="coverage test coverageReport" />
+    <option name="tasks" value="test coverageReport" />
     <option name="useSbtShell" value="false" />
     <option name="vmparams" value="-Xms512M -Xmx1024M -Xss1M -XX:+CMSClassUnloadingEnabled" />
     <option name="workingDir" value="$PROJECT_DIR$" />
