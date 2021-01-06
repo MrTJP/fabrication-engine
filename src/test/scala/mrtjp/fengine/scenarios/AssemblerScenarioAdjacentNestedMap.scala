@@ -2,6 +2,7 @@ package mrtjp.fengine.scenarios
 
 import mrtjp.fengine.TileCoord
 import mrtjp.fengine.TileCoord._
+import mrtjp.fengine.assemble.{ICAssembler, ICFlatMap}
 import mrtjp.fengine.testimpl._
 
 /**
@@ -106,10 +107,17 @@ class AssemblerScenarioAdjacentNestedMap(n1_precompile:Boolean, n2_precompile:Bo
         addTile(outputTileCoord, outputTile)
     }
 
-    override val rootMap:TTestFETileMap = map
+    override def rootMap:TTestFETileMap = map
 
     override val expectedGates = Seq(map.g1.gate, n1Map.g1.gate, n2Map.g1.gate, map.g2.gate)
-    override val expectedRegisters = Seq(map.inputTile.register, map.g1.registers(dirSouth), n1Map.g1.registers(dirSouth), n2Map.g1.registers(dirSouth), map.g2.registers(dirSouth))
+
+    override val expectedRegisters = Seq(
+        map.inputTile.register,
+        map.g1.registers(dirSouth),
+        n1Map.g1.registers(dirSouth),
+        n2Map.g1.registers(dirSouth),
+        map.g2.registers(dirSouth)
+    )
 
     override val expectedRelationships = Seq(
         (map.g1.gate, Seq(map.inputTile.register), Seq(map.g1.registers(dirSouth))),
@@ -117,6 +125,13 @@ class AssemblerScenarioAdjacentNestedMap(n1_precompile:Boolean, n2_precompile:Bo
         (n2Map.g1.gate, Seq(n1Map.g1.registers(dirSouth)), Seq(n2Map.g1.registers(dirSouth))),
         (map.g2.gate, Seq(n2Map.g1.registers(dirSouth)), Seq(map.g2.registers(dirSouth)))
     )
+
+    override def assembleFlatMap:ICFlatMap = {
+        val assembler:ICAssembler = ICAssembler.newAssembler
+        assembler.addTileMap(map, Map.empty)
+        assembler.allocRegisterID(1) //Reserve a few for IO tiles
+        assembler.result()
+    }
 }
 
 object AssemblerScenarioAdjacentNestedMap

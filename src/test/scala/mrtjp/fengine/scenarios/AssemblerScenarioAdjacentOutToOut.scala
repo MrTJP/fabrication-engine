@@ -2,6 +2,7 @@ package mrtjp.fengine.scenarios
 
 import mrtjp.fengine.TileCoord._
 import mrtjp.fengine._
+import mrtjp.fengine.assemble.{ICAssembler, ICFlatMap}
 import mrtjp.fengine.testimpl.{PortlessGateTileImpl, TTestFETileMap}
 
 /**
@@ -35,9 +36,10 @@ class AssemblerScenarioAdjacentOutToOut extends AssemblerScenario {
         addTile(sourceYCoord, sourceYGate)
     }
 
-    override val rootMap:TTestFETileMap = map
+    override def rootMap:TTestFETileMap = map
 
     override val expectedGates = Seq(map.sourceXGate.gate, map.sourceYGate.gate)
+
     override val expectedRegisters = Seq(
         map.sourceXGate.registers(dirSouth),
         map.sourceYGate.registers(dirNorth)

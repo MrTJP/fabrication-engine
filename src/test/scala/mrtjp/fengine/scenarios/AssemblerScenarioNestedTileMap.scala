@@ -2,6 +2,7 @@ package mrtjp.fengine.scenarios
 
 import mrtjp.fengine.TileCoord
 import mrtjp.fengine.TileCoord._
+import mrtjp.fengine.assemble.{ICAssembler, ICFlatMap}
 import mrtjp.fengine.testimpl._
 
 /**
@@ -94,10 +95,10 @@ class AssemblerScenarioNestedTileMap(n_precompile:Boolean) extends AssemblerScen
             addTile(new TileCoord(0, y, 0), new PortlessWireTileImpl(bitNorth|bitSouth))
     }
 
-
-    override val rootMap:TTestFETileMap = map
+    override def rootMap:TTestFETileMap = map
 
     override val expectedGates = Seq(map.sourceGate.gate, map.sinkGate.gate, submap.gate.gate)
+
     override val expectedRegisters = Seq(map.sourceGate.registers(dirSouth), submap.gate.registers(dirSouth))
 
     override val expectedRelationships = Seq(
@@ -105,6 +106,13 @@ class AssemblerScenarioNestedTileMap(n_precompile:Boolean) extends AssemblerScen
         (submap.gate.gate, Seq(map.sourceGate.registers(dirSouth)), Seq(submap.gate.registers(dirSouth))),
         (map.sinkGate.gate, Seq(submap.gate.registers(dirSouth)), Seq())
     )
+
+    override def assembleFlatMap:ICFlatMap = {
+        val assembler:ICAssembler = ICAssembler.newAssembler
+        assembler.addTileMap(map, Map.empty)
+        assembler.allocRegisterID(1) //Reserve a few for IO tiles
+        assembler.result()
+    }
 }
 
 object AssemblerScenarioNestedTileMap

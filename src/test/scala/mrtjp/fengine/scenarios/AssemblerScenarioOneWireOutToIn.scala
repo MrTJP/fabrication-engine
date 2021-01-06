@@ -42,8 +42,10 @@ class AssemblerScenarioOneWireOutToIn extends AssemblerScenario
         addTile(new TileCoord(0, 1, 0), new PortlessWireTileImpl(bitNorth|bitSouth))
     }
 
-    override val rootMap:TTestFETileMap = map
+    override def rootMap:TTestFETileMap = map
+
     override val expectedGates = Seq(map.sourceGate.gate, map.sinkGate.gate)
+
     override val expectedRegisters = Seq(map.sourceGate.registers(dirSouth))
 
     override val expectedRelationships = Seq(

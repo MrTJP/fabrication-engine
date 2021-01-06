@@ -34,5 +34,6 @@ class AssemblerScenarioSecludedSink extends AssemblerScenario
     override val expectedGates = Seq(map.sinkXGate.gate)
 
     override val expectedRegisters = Seq()
+
     override val expectedRelationships = Seq()
 }

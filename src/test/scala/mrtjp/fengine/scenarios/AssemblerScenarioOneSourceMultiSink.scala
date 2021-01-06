@@ -61,20 +61,22 @@ class AssemblerScenarioOneSourceMultiSink extends AssemblerScenario
 
     }
 
-    override val rootMap:TTestFETileMap = map
-    override val expectedGates = Seq(
+    override def rootMap:TTestFETileMap = map
+
+    override def expectedGates = Seq(
         map.sinkAGate.gate,
         map.sinkBGate.gate,
         map.sinkCGate.gate,
         map.sourceGate.gate
     )
-    override val expectedRegisters = Seq(
+
+    override def expectedRegisters = Seq(
         map.sourceGate.registers(dirNorth),
         map.sourceGate.registers(dirEast),
         map.sourceGate.registers(dirWest)
     )
 
-    override val expectedRelationships = Seq(
+    override def expectedRelationships = Seq(
         (map.sinkAGate.gate, Seq(map.sourceGate.registers(dirWest)), Seq()),
         (map.sinkBGate.gate, Seq(map.sourceGate.registers(dirNorth)), Seq()),
         (map.sinkCGate.gate, Seq(map.sourceGate.registers(dirEast)), Seq()),

@@ -1,5 +1,6 @@
 package mrtjp.fengine.scenarios
 
+import mrtjp.fengine.assemble.{ICAssembler, ICFlatMap}
 import mrtjp.fengine.testimpl.TTestFETileMap
 
 /**
@@ -25,6 +26,8 @@ class AssemblerScenarioEmptyMap extends AssemblerScenario
     override val rootMap:TTestFETileMap = map
 
     override val expectedGates = Seq()
+
     override val expectedRegisters = Seq()
+
     override val expectedRelationships = Seq()
 }
