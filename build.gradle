@@ -1,11 +1,11 @@
 plugins {
     id 'java'
     id 'jacoco'
+    id 'maven-publish'
 }
 
 repositories {
     mavenCentral()
-    maven { url = "https://repo.artima.com/releases" }
 }
 
 group = "io.github.mrtjp"
@@ -48,5 +48,50 @@ jacocoTestReport {
     reports {
         xml.enabled = true
         html.enabled = true
+    }
+}
+
+publishing {
+    repositories {
+        maven {
+            url "https://nexus.covers1624.net/repository/maven-releases/"
+            credentials {
+                username System.getenv('MAVEN_USER')
+                password System.getenv('MAVEN_PASS')
+            }
+        }
+    }
+    publications {
+        fabricationEngine(MavenPublication) {
+
+            groupId project.group
+            artifactId project.archivesBaseName
+            version project.version
+
+            from components.java
+
+            pom {
+                name = "fabrication-engine"
+                description = "Simple compiler for tile-based logic circuits"
+
+                //The publish plugin doesnt like GString's here apparently..
+                url = "https://github.com/MrTJP/fabrication-engine".toString()
+                scm {
+                    url = "https://github.com/MrTJP/fabrication-engine".toString()
+                    connection = "scm:git:git://github.com/MrTJP/fabrication-engine.git".toString()
+                    connection = "scm:git:git@github.com:MrTJP/fabrication-engine.git".toString()
+                }
+                issueManagement {
+                    system = 'github'
+                    url = "https://github.com/MrTJP/fabrication-engine/issues".toString()
+                }
+                developers {
+                    developer {
+                        id = 'mrtjp'
+                        name = 'mrtjp'
+                    }
+                }
+            }
+        }
     }
 }

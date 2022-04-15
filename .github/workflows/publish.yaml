@@ -1,0 +1,156 @@
+# This workflow publishes commits to Maven
+name: Publish Releases
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - publish/**
+
+jobs:
+  build:
+    name: Build and Publish
+    runs-on: ubuntu-latest
+    environment: prod
+
+    steps:
+      - name: Checkout git repo
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Resolve release type
+        id: release_type
+        run: |
+          # Extract release type from ref (refs/heads/publish/{type})
+          release_type="$(echo $GITHUB_REF | sed -E 's/refs\/heads\/publish\/([a-zA-Z0-9.-]+)/\1/')"
+
+          case $release_type in
+            "release")
+              publish_maven=true
+              publish_gh_release=true
+              version_format="\${major}.\${minor}.\${patch}"
+              ;;
+            "beta")
+              publish_maven=true
+              publish_gh_release=false
+              version_format="\${major}.\${minor}.\${patch}-beta-\${increment}"
+              ;;
+            "alpha")
+              publish_maven=true
+              publish_gh_release=false
+              version_format="\${major}.\${minor}.\${patch}-alpha-\${increment}"
+              ;;
+            *)
+              echo "::warning::Unknown release type: $release_type"
+              publish_maven=false
+              publish_gh_release=false
+              version_format="\${major}.\${minor}.\${patch}-$release_type-\${increment}"
+          esac
+
+          echo "::set-output name=release_type::$release_type"
+          echo "::set-output name=publish_maven::$publish_maven"
+          echo "::set-output name=publish_gh_release::$publish_gh_release"
+          echo "::set-output name=version_format::$version_format"
+
+      - name: Generate version
+        id: versioning
+        uses: paulhatch/semantic-version@v4.0.1
+        with:
+          major_pattern: "/^((fix)|(feat)|(perf))(\\([a-z]+\\))?!:/"
+          minor_pattern: "/^((fix)|(feat)|(perf))(\\([a-z]+\\))?:/"
+          format: ${{ steps.release_type.outputs.version_format }}
+
+      # Install python and generate changelog
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Cache PIP packages
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('.github/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - name: Install python deps
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r .github/requirements.txt
+      - name: Generate changelogs
+        run: |
+          python .github/changelog.py generateRaw
+          python .github/changelog.py generateMarkdown --nextTag=${{ steps.versioning.outputs.version }}
+
+      # Install JDK and build with Gradle
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: '8'
+
+      - name: Restore Gradle cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/*.properties', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Build and test
+        run: ./gradlew build test compilerTest jacocoTestReport
+        env:
+          AUTO_GENERATED_VERSION: ${{ steps.versioning.outputs.version }}
+
+      - name: Upload coverage report
+        uses: codecov/codecov-action@v2
+        with:
+          fail_ci_if_error: true
+
+      - name: Publish to Maven
+        if: ${{ steps.release_type.outputs.publish_maven == 'true' }}
+        run: ./gradlew publish
+        env:
+          AUTO_GENERATED_VERSION: ${{ steps.versioning.outputs.version }}
+          MAVEN_USER: ${{ secrets.MAVEN_USER }}
+          MAVEN_PASS: ${{ secrets.MAVEN_PASS }}
+
+      - name: Tag and release
+        if: ${{ steps.release_type.outputs.publish_gh_release == 'true' }}
+        uses: softprops/action-gh-release@v0.1.7
+        with:
+          body_path: CHANGELOG.md
+          tag_name: ${{ steps.versioning.outputs.version_tag }}
+          files: |
+            build/libs/*
+            CHANGELOG.md
+            CHANGELOG.txt
+
+      - name: Update badge
+        uses: schneegans/dynamic-badges-action@v1.2.0
+        with:
+          auth: ${{ secrets.GIST_SECRET }}
+          gistID: 405427e70bea42393b7b8e4548393e9a
+          filename: fabrication-engine-${{ steps.release_type.outputs.release_type }}.json
+          label: Fabrication Engine
+          message: ${{ steps.versioning.outputs.version }}
+          color: green
+          namedLogo: Java
+          cacheSeconds: 300
+
+      - name: Cleanup Gradle cache
+        # These files shouldn't be cached according to https://docs.github.com/en/actions/guides/building-and-testing-java-with-gradle
+        run: |
+          rm -f ~/.gradle/caches/modules-2/modules-2.lock
+          rm -f ~/.gradle/caches/modules-2/gc.properties
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: fabrication-engine-${{ steps.versioning.outputs.version }}
+          path: |
+            build/libs
+            CHANGELOG.md
+            CHANGELOG.txt
