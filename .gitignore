@@ -1,5 +1,6 @@
-# sbt
-.bsp
+# gradle
+.gradle/
+build/
 target/
 
 # intellij
