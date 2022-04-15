@@ -1,0 +1,52 @@
+plugins {
+    id 'java'
+    id 'jacoco'
+}
+
+repositories {
+    mavenCentral()
+    maven { url = "https://repo.artima.com/releases" }
+}
+
+group = "io.github.mrtjp"
+archivesBaseName = "fabrication-engine"
+version = System.getenv("AUTO_GENERATED_VERSION") ?: "0.0.0.1"
+
+sourceSets {
+    compiletest
+}
+
+configurations {
+    compiletestImplementation.extendsFrom implementation
+}
+
+dependencies {
+    implementation 'org.scala-lang:scala-library:2.13.4'
+    implementation 'org.clapper:grizzled-slf4j_2.13:1.3.4'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.8.2'
+    testImplementation sourceSets.main.output
+
+    compiletestImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
+    compiletestImplementation 'org.junit.platform:junit-platform-engine:1.8.2'
+    compiletestImplementation sourceSets.main.output
+}
+
+test {
+    useJUnitPlatform()
+}
+
+task compilerTest(type: Test) {
+    useJUnitPlatform()
+    testClassesDirs = sourceSets.compiletest.output.classesDirs
+    classpath = sourceSets.compiletest.runtimeClasspath
+}
+
+jacocoTestReport {
+    executionData fileTree(project.rootDir.absolutePath).include("**/build/jacoco/*.exec")
+
+    reports {
+        xml.enabled = true
+        html.enabled = true
+    }
+}
