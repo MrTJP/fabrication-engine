@@ -1,6 +1,7 @@
 package mrtjp.fengine.assemble;
 
 import mrtjp.fengine.api.ICAssembler;
+import mrtjp.fengine.api.ICAssemblyTile;
 import mrtjp.fengine.api.ICFlatMap;
 import mrtjp.fengine.simulate.ICGate;
 import mrtjp.fengine.simulate.ICRegister;
@@ -9,7 +10,7 @@ import mrtjp.fengine.tiles.FETileMap;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class ICAssemblerImpl implements ICAssembler, ICFlatMap {
+public class ICAssemblerImpl implements ICAssembler, ICFlatMap, ICAssemblyTile.Allocator, ICAssemblyTile.RemapRegistry, ICAssemblyTile.RemapProvider, ICAssemblyTile.Collector {
 
     private final Map<Integer, ICRegister> registers = new HashMap<>();
     private final Map<Integer, ICGate> gates = new HashMap<>();
@@ -53,11 +54,6 @@ public class ICAssemblerImpl implements ICAssembler, ICFlatMap {
     }
 
     @Override
-    public int getMapIndex() {
-        return exploredFlatMaps.size() + exploredTileMaps.size();
-    }
-
-    @Override
     public int getRemappedRegisterID(int id) {
         return registerIDRemaps.getOrDefault(id, id);
     }
@@ -69,12 +65,23 @@ public class ICAssemblerImpl implements ICAssembler, ICFlatMap {
 
     @Override
     public void addRegister(int id, ICRegister r) {
+
+        if (registers.containsKey(id)) {
+            if (getMapIndex() == 0)
+                throw new IllegalArgumentException("Register ID " + id + " already exists");
+            else
+                return; // Duplicates are allowed in nested maps, but are ignored. They are expected to be remapped.
+        }
+
         allocRegisterID(id);
         registers.put(id, r);
     }
 
     @Override
     public void addGate(int id, ICGate gate, List<Integer> drivingRegs, List<Integer> drivenRegs) {
+
+        if (gates.containsKey(id)) throw new IllegalArgumentException("Gate ID " + id + " already exists");
+
         allocGateID(id);
         gates.put(id, gate);
 
@@ -126,13 +133,14 @@ public class ICAssemblerImpl implements ICAssembler, ICFlatMap {
         for (FETileMap.TileMapEntry entry : entries) {
             System.out.println("Pathfinding at " + entry.getCoord());
             PathFinder pathFinder = new PathFinder(map, entry.getCoord());
-            entry.getTile().locate(this, pathFinder);
+            entry.getTile().locate(pathFinder);
+            entry.getTile().registerRemaps(this);
         }
 
         // Phase 3: Remapping
         System.out.println("Assembly Phase 3: Remapping");
         for (FETileMap.TileMapEntry entry : entries) {
-            entry.getTile().remap(this);
+            entry.getTile().consumeRemaps(this);
         }
 
         // Phase 4: Collect
@@ -203,6 +211,10 @@ public class ICAssemblerImpl implements ICAssembler, ICFlatMap {
         }
 
         return this;
+    }
+
+    private int getMapIndex() {
+        return exploredFlatMaps.size() + exploredTileMaps.size();
     }
 
     private static class TileMapRemapPair {

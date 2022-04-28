@@ -1,6 +1,5 @@
 package mrtjp.fengine.tiles;
 
-import mrtjp.fengine.api.ICAssembler;
 import mrtjp.fengine.assemble.PathFinder;
 import mrtjp.fengine.assemble.PathFinderResult;
 
@@ -45,11 +44,10 @@ public abstract class FEPortlessNestedMapTile implements FETile {
 
     /**
      * Override point for injecting the nested element into the assembler.
-     *
-     * @param assembler Receives the nested map
+     *  @param collector Receives the nested map
      * @param remaps    Remaps as determined by the signal maps above
      */
-    abstract void addMapToAssembler(ICAssembler assembler, Map<Integer, Integer> remaps);
+    abstract void addMapToAssembler(Collector collector, Map<Integer, Integer> remaps);
 
     @Override
     public Optional<Integer> getInputRegister(int inDir, int inPort) {
@@ -64,15 +62,15 @@ public abstract class FEPortlessNestedMapTile implements FETile {
     }
 
     @Override
-    public void allocate(ICAssembler assembler) {
+    public void allocate(Allocator allocator) {
         for (int dir = 0; dir < 6; dir++) {
-            outputRegisters[dir] = (getOutDirMask() & 1 << dir) != 0 ? assembler.allocRegisterID() : -1;
+            outputRegisters[dir] = (getOutDirMask() & 1 << dir) != 0 ? allocator.allocRegisterID() : -1;
             inputRegisters[dir] = -1;
         }
     }
 
     @Override
-    public void locate(ICAssembler assembler, PathFinder pathFinder) {
+    public void locate(PathFinder pathFinder) {
         for (int dir = 0; dir < 6; dir++) {
             if ((getInDirMask() & 1 << dir) != 0) {
                 int finalDir = dir;
@@ -88,15 +86,15 @@ public abstract class FEPortlessNestedMapTile implements FETile {
     }
 
     @Override
-    public void remap(ICAssembler assembler) {
+    public void consumeRemaps(RemapProvider remapProvider) {
         for (int dir = 0; dir < 6; dir++) {
-            outputRegisters[dir] = assembler.getRemappedRegisterID(outputRegisters[dir]);
-            inputRegisters[dir] = assembler.getRemappedRegisterID(inputRegisters[dir]);
+            outputRegisters[dir] = remapProvider.getRemappedRegisterID(outputRegisters[dir]);
+            inputRegisters[dir] = remapProvider.getRemappedRegisterID(inputRegisters[dir]);
         }
     }
 
     @Override
-    public void collect(ICAssembler assembler) {
+    public void collect(Collector collector) {
         Map<Integer, Integer> remaps = new HashMap<>();
 
         for (Map.Entry<Integer, Integer> e : getInputSignalMap().entrySet()) {
@@ -113,6 +111,6 @@ public abstract class FEPortlessNestedMapTile implements FETile {
             remaps.put(insideOutputReg, outsideOutputReg);
         }
 
-        addMapToAssembler(assembler, remaps);
+        addMapToAssembler(collector, remaps);
     }
 }
