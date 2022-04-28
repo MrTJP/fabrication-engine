@@ -64,19 +64,19 @@ public abstract class FEPortlessGateTile implements FETile {
     }
 
     @Override
-    public void allocate(ICAssembler assembler) {
+    public void allocate(Allocator allocator) {
         Arrays.fill(inputRegisters, -1);
         Arrays.fill(outputRegisters, -1);
         gateId = -1;
 
         for (int dir = 0; dir < 6; dir++) {
-            if ((getOutDirMask() & 1 << dir) != 0) outputRegisters[dir] = assembler.allocRegisterID();
+            if ((getOutDirMask() & 1 << dir) != 0) outputRegisters[dir] = allocator.allocRegisterID();
         }
-        gateId = assembler.allocGateID();
+        gateId = allocator.allocGateID();
     }
 
     @Override
-    public void locate(ICAssembler assembler, PathFinder pathFinder) {
+    public void locate(PathFinder pathFinder) {
         for (int dir = 0; dir < 6; dir++) {
             if ((getInDirMask() & 1 << dir) != 0) {
                 int finalDir = dir;
@@ -92,22 +92,22 @@ public abstract class FEPortlessGateTile implements FETile {
     }
 
     @Override
-    public void remap(ICAssembler assembler) {
+    public void consumeRemaps(RemapProvider remapProvider) {
         for (int dir = 0; dir < 6; dir++) {
-            outputRegisters[dir] = assembler.getRemappedRegisterID(outputRegisters[dir]);
-            inputRegisters[dir] = assembler.getRemappedRegisterID(inputRegisters[dir]);
+            outputRegisters[dir] = remapProvider.getRemappedRegisterID(outputRegisters[dir]);
+            inputRegisters[dir] = remapProvider.getRemappedRegisterID(inputRegisters[dir]);
         }
     }
 
     @Override
-    public void collect(ICAssembler assembler) {
+    public void collect(Collector collector) {
         ArrayList<Integer> inputs = Arrays.stream(inputRegisters).filter(c -> c != -1).boxed().collect(Collectors.toCollection(ArrayList::new));
         ArrayList<Integer> outputs = Arrays.stream(outputRegisters).filter(c -> c != -1).boxed().collect(Collectors.toCollection(ArrayList::new));
 
         for (int dir = 0; dir < 6; dir++) {
-            if (outputRegisters[dir] != -1) assembler.addRegister(outputRegisters[dir], createRegister(dir));
+            if (outputRegisters[dir] != -1) collector.addRegister(outputRegisters[dir], createRegister(dir));
         }
         ICGate op = createGate(inputs, outputs);
-        assembler.addGate(gateId, op, inputs, outputs);
+        collector.addGate(gateId, op, inputs, outputs);
     }
 }

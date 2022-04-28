@@ -25,7 +25,5 @@ public interface ICAssembler {
     void addTileMap(FETileMap map, Map<Integer, Integer> remaps);
     void addFlatMap(ICFlatMap flatMap, Map<Integer, Integer> remaps);
 
-    int getMapIndex();
-
     ICFlatMap result();
 }

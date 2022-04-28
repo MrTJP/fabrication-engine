@@ -1,7 +1,12 @@
 package mrtjp.fengine.api;
 
 import mrtjp.fengine.assemble.PathFinder;
+import mrtjp.fengine.simulate.ICGate;
+import mrtjp.fengine.simulate.ICRegister;
+import mrtjp.fengine.tiles.FETileMap;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -17,38 +22,48 @@ public interface ICAssemblyTile {
 
     /**
      * Assembly pass 1:
-     *
+     * <p>
      * Allocate output register IDs and Gate IDs.
      *
-     * @param assembler The assembler performing the flat mapping
+     * @param allocator Used to allocate registers and gates
      */
-    default void allocate(ICAssembler assembler) {}
+    default void allocate(Allocator allocator) { }
 
     /**
      * Assembly pass 2:
-     *   - Use provided pathfinder to locate input register IDs.
-     *   - Use provided assembler to declare necessary remaps
+     * <p>
+     * Use provided pathfinder to locate input register IDs.
      *
-     * @param assembler The running Assembler
      * @param pathFinder Pathfinder to be used to locate input registers from the map
      */
-    default void locate(ICAssembler assembler, PathFinder pathFinder) {}
+    default void locate(PathFinder pathFinder) { }
+
+    /**
+     * Assembly pass 2:
+     * <p>
+     * Use provided remap registry to declare necessary remaps
+     *
+     * @param remapRegistry Used to register remaps
+     */
+    default void registerRemaps(RemapRegistry remapRegistry) { }
 
     /**
      * Assembly pass 3:
-     *   - Check all register IDs for remap and adjust to new value if necessary.
+     * <p>
+     * Check all register IDs for remap and adjust to new value if necessary.
      *
-     * @param assembler The assembler performing the flat mapping
+     * @param remapProvider Provides remaps that were registered during assembly pass 2
      */
-    default void remap(ICAssembler assembler) {}
+    default void consumeRemaps(RemapProvider remapProvider) { }
 
     /**
      * Assembly pass 4:
-     *   - Add registers and gates to the assembler
+     * <p>
+     * Add registers and gates to the assembler
      *
-     * @param assembler The assembler performing the flat mapping
+     * @param collector The collector for assigning registers and gates
      */
-    default void collect(ICAssembler assembler) {}
+    default void collect(Collector collector) { }
 
     /**
      * Used to calculate where an incoming signal can propagate to.
@@ -56,9 +71,8 @@ public interface ICAssemblyTile {
      * @param inDir  The direction from which the propagating signal is coming from
      * @param inPort The port for which the incoming signal is associated with
      * @return Propagation test function `f(Int, Int) => Boolean` such that if the incoming signal (inDir, inPort)
-     *         is allowed to propagate out to direction `outDir` on port `outPort`, then:
-     *         f(outDir, outPort) == true
-     *
+     * is allowed to propagate out to direction `outDir` on port `outPort`, then:
+     * f(outDir, outPort) == true
      */
     default PropagationFunction propagationFunc(int inDir, int inPort) { return (a, b) -> false; }
 
@@ -79,4 +93,36 @@ public interface ICAssemblyTile {
      * @return A register ID if this gate is driven by port `inPort` on side `outputDir`, or None
      */
     default Optional<Integer> getInputRegister(int inDir, int inPort) { return Optional.empty(); }
+
+    interface Allocator {
+
+        int allocRegisterID();
+
+        int allocRegisterID(int id);
+
+        int allocGateID();
+
+        int allocGateID(int id);
+    }
+
+    interface RemapRegistry {
+
+        void addRemap(int oldID, int newID);
+    }
+
+    interface RemapProvider {
+
+        int getRemappedRegisterID(int id);
+    }
+
+    interface Collector {
+
+        void addRegister(int id, ICRegister r);
+
+        void addGate(int id, ICGate gate, List<Integer> drivingRegs, List<Integer> drivenRegs);
+
+        void addTileMap(FETileMap map, Map<Integer, Integer> remaps);
+
+        void addFlatMap(ICFlatMap flatMap, Map<Integer, Integer> remaps);
+    }
 }

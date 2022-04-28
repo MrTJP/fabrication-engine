@@ -1,7 +1,5 @@
 package mrtjp.fengine.tiles;
 
-import mrtjp.fengine.api.ICAssembler;
-
 import java.util.Map;
 
 public abstract class PortlessNestedTileMapTile extends FEPortlessNestedMapTile {
@@ -21,8 +19,8 @@ public abstract class PortlessNestedTileMapTile extends FEPortlessNestedMapTile 
     }
 
     @Override
-    void addMapToAssembler(ICAssembler assembler, Map<Integer, Integer> remaps) {
-        assembler.addTileMap(nestedTileMap, remaps);
+    void addMapToAssembler(Collector collector, Map<Integer, Integer> remaps) {
+        collector.addTileMap(nestedTileMap, remaps);
     }
 
     //@formatter:off

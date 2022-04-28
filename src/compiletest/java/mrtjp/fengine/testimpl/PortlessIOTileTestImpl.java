@@ -36,12 +36,12 @@ public class PortlessIOTileTestImpl implements FETile {
     }
 
     @Override
-    public void allocate(ICAssembler assembler) {
-        regId = assembler.allocRegisterID(ioRegId);
+    public void allocate(Allocator allocator) {
+        regId = allocator.allocRegisterID(ioRegId);
     }
 
     @Override
-    public void locate(ICAssembler assembler, PathFinder pathFinder) {
+    public void locate(PathFinder pathFinder) {
         if (!isGlobalInput) { //Pathfinding only necessary for output IO tile, since they have an incoming register
             PathFinderResult pfr = pathFinder.doPathFinding((d, p) -> d == ioDir);
             if (pfr.inputRegisters.size() > 1) {
@@ -50,27 +50,26 @@ public class PortlessIOTileTestImpl implements FETile {
             if (!pfr.inputRegisters.isEmpty()) {
                 regId = pfr.inputRegisters.get(0);
             }
-            if (regId > -1) {
-                assembler.addRemap(regId, ioRegId); // Remap the actual found regID to the expected, statically-assigned ID
-            }
         }
     }
 
     @Override
-    public void remap(ICAssembler assembler) {
-        regId = assembler.getRemappedRegisterID(regId);
+    public void registerRemaps(RemapRegistry remapRegistry) {
+        if (regId > -1) {
+            remapRegistry.addRemap(regId, ioRegId); // Remap the actual found regID to the expected, statically-assigned ID
+        }
     }
 
     @Override
-    public void collect(ICAssembler assembler) {
+    public void consumeRemaps(RemapProvider remapProvider) {
+        regId = remapProvider.getRemappedRegisterID(regId);
+    }
+
+    @Override
+    public void collect(Collector collector) {
         if (isGlobalInput) {
-            // TODO This logic prevents IO tiles in nested maps to add a redundant register,
-            //      since it is mapped to one provided by one-level-up map that is connecting
-            //      into this one. This should be handled by the assembler. Basically, if regID
-            //      already has a register, then don't add it again. Also make sure they
-            //      are compatible or something.
-            if (regId > -1 && assembler.getMapIndex() == 0) { //Only run this on top-level maps
-                assembler.addRegister(regId, register);
+            if (regId > -1) {
+                collector.addRegister(regId, register); // Auto-dropped if this is not the top-level map
             }
         }
     }
