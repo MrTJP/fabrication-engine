@@ -14,6 +14,8 @@ public class ICSimulation {
 
     private Queue<Integer> changeQueue = new LinkedList<>();
 
+    private static final int[] EMPTY_INT_ARRAY = new int[0];
+
     public ICSimulation(
             Map<Integer, ICRegister> registerMap,
             Map<Integer, ICGate> gateMap,
@@ -21,11 +23,14 @@ public class ICSimulation {
             Map<Integer, ArrayList<Integer>> gateInputsMap,
             Map<Integer, ArrayList<Integer>> gateOutputsMap
     ) {
-        registers = expandIntoArray(registerMap);
-        gates = expandIntoArray(gateMap);
-        regDependents = expandIntoDoubleIntArray(registerDependentsMap);
-        gateInputs = expandIntoDoubleIntArray(gateInputsMap);
-        gateOutputs = expandIntoDoubleIntArray(gateOutputsMap);
+        int regCount = maxKey(registerMap) + 1;
+        int gateCount = maxKey(gateMap) + 1;
+
+        registers = expandIntoArray(registerMap, new ICRegister[regCount]);
+        gates = expandIntoArray(gateMap, new ICGate[gateCount]);
+        regDependents = expandIntoDoubleIntArray(registerDependentsMap, regCount);
+        gateInputs = expandIntoDoubleIntArray(gateInputsMap, gateCount);
+        gateOutputs = expandIntoDoubleIntArray(gateOutputsMap, gateCount);
     }
 
     public ICSimulation(ICFlatMap map) {
@@ -39,19 +44,18 @@ public class ICSimulation {
                 .orElse(0);
     }
 
-    @SuppressWarnings ("unchecked")
-    private static <T> T[] expandIntoArray(Map<Integer, T> map) {
-        T[] array = (T[]) new Object[maxKey(map)];
+    private static <T> T[] expandIntoArray(Map<Integer, T> map, T[] array) {
         for (Map.Entry<Integer, T> e : map.entrySet()) {
             array[e.getKey()] = e.getValue();
         }
         return array;
     }
 
-    private static int[][] expandIntoDoubleIntArray(Map<Integer, ArrayList<Integer>> map) {
-        int[][] array = new int[maxKey(map)][];
+    private static int[][] expandIntoDoubleIntArray(Map<Integer, ArrayList<Integer>> map, int length) {
+        int[][] array = new int[length][];
+        Arrays.fill(array, EMPTY_INT_ARRAY);
         for (Map.Entry<Integer, ArrayList<Integer>> e : map.entrySet()) {
-            array[e.getKey()] = e.getValue().stream().mapToInt(c -> c).toArray();
+            array[e.getKey()] = e.getValue().isEmpty() ? EMPTY_INT_ARRAY : e.getValue().stream().mapToInt(c -> c).toArray();
         }
         return array;
     }
