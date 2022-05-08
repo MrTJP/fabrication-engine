@@ -1,6 +1,5 @@
 package mrtjp.fengine.testimpl;
 
-import mrtjp.fengine.api.ICAssembler;
 import mrtjp.fengine.assemble.PathFinder;
 import mrtjp.fengine.assemble.PathFinderResult;
 import mrtjp.fengine.simulate.StaticByteRegister;
@@ -27,17 +26,21 @@ public class PortlessIOTileTestImpl implements FETile {
 
     @Override
     public Optional<Integer> getOutputRegister(int outDir, int outPort) {
-        return regId > -1 && isGlobalInput && outDir == ioDir ? Optional.of(regId) : Optional.empty();
+        return isGlobalInput && outDir == ioDir ? Optional.of(regId) : Optional.empty();
     }
 
     @Override
     public Optional<Integer> getInputRegister(int inDir, int inPort) {
-        return regId > -1 && !isGlobalInput && inDir == ioDir ? Optional.of(regId) : Optional.empty();
+        return !isGlobalInput && inDir == ioDir ? Optional.of(regId) : Optional.empty();
     }
 
     @Override
     public void allocate(Allocator allocator) {
-        regId = allocator.allocRegisterID(ioRegId);
+        if (isGlobalInput) {
+            regId = allocator.allocRegisterID(ioRegId);
+        } else {
+            regId = -1; // located with pathfinder, then remapped to ioRegId
+        }
     }
 
     @Override
@@ -55,7 +58,9 @@ public class PortlessIOTileTestImpl implements FETile {
 
     @Override
     public void registerRemaps(RemapRegistry remapRegistry) {
-        if (regId > -1) {
+        if (!isGlobalInput) {
+            // TODO test case for when Input IO gate is connected directly to output IO gate
+            //      (Remap request should be ignored)
             remapRegistry.addRemap(regId, ioRegId); // Remap the actual found regID to the expected, statically-assigned ID
         }
     }
@@ -68,9 +73,7 @@ public class PortlessIOTileTestImpl implements FETile {
     @Override
     public void collect(Collector collector) {
         if (isGlobalInput) {
-            if (regId > -1) {
-                collector.addRegister(regId, register); // Auto-dropped if this is not the top-level map
-            }
+            collector.addRegister(regId, register); // Auto-dropped if this is not the top-level map
         }
     }
 }
