@@ -21,6 +21,11 @@ public class FabricationBasicTest {
         this.scenario = scenario;
     }
 
+    // Override point to test other assemblers
+    protected ICAssembler createAssembler() {
+        return FabricationEngine.newAssembler();
+    }
+
     @FabricationTest (order = 0)
     public void testValidateScenario() {
 
@@ -31,7 +36,7 @@ public class FabricationBasicTest {
     public void testPrimaryAssembly() {
         System.out.println("Initializing test scenario...");
 
-        ICAssembler assembler = FabricationEngine.newAssembler();
+        ICAssembler assembler = createAssembler();
 
         // Start assembly at the root map
         scenario.init();
