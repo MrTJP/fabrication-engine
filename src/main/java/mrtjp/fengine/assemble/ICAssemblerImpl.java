@@ -10,7 +10,7 @@ import mrtjp.fengine.tiles.FETileMap;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class ICAssemblerImpl implements ICAssembler, ICFlatMap, ICAssemblyTile.Allocator, ICAssemblyTile.RemapRegistry, ICAssemblyTile.RemapProvider, ICAssemblyTile.Collector {
+public class ICAssemblerImpl implements ICAssembler, ICAssemblyTile.Allocator, ICAssemblyTile.RemapRegistry, ICAssemblyTile.RemapProvider, ICAssemblyTile.Collector {
 
     private final Map<Integer, ICRegister> registers = new HashMap<>();
     private final Map<Integer, ICGate> gates = new HashMap<>();
@@ -210,7 +210,7 @@ public class ICAssemblerImpl implements ICAssembler, ICFlatMap, ICAssemblyTile.A
             exploredFlatMaps.add(pair.map);
         }
 
-        return this;
+        return new ICFlatMap(registers, gates, regDependents, regDependencies, gateDependents, gateDependencies);
     }
 
     private int getMapIndex() {
@@ -238,15 +238,4 @@ public class ICAssemblerImpl implements ICAssembler, ICFlatMap, ICAssemblyTile.A
             this.remaps = remaps;
         }
     }
-
-    //@formatter:off
-    @Override public Map<Integer, ICRegister> getRegisters() { return registers; }
-    @Override public Map<Integer, ICGate> getGates() { return gates; }
-    @Override public Map<Integer, ArrayList<Integer>> getRegDependents() { return regDependents; }
-    @Override public Map<Integer, ArrayList<Integer>> getRegDependencies() { return regDependencies; }
-    @Override public Map<Integer, ArrayList<Integer>> getGateDependents() { return gateDependents; }
-    @Override public Map<Integer, ArrayList<Integer>> getGateDependencies() { return gateDependencies; }
-    @Override public List<FETileMap> getExploredTileMaps() { return exploredTileMaps; }
-    @Override public List<ICFlatMap> getExploredFlatMaps() { return exploredFlatMaps; }
-    //@formatter:on
 }
