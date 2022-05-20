@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 
 import static mrtjp.fengine.api.ICStepThroughAssembler.AssemblerStepType.*;
 
-public class ICStepThroughAssemblerImpl implements ICStepThroughAssembler, ICFlatMap {
+public class ICStepThroughAssemblerImpl implements ICStepThroughAssembler {
 
     private final StepTree<AssemblerStepType, AssemblerStepResult> tree = new StepTree<>(new StepTreeEventReceiver());
 
@@ -298,7 +298,7 @@ public class ICStepThroughAssemblerImpl implements ICStepThroughAssembler, ICFla
 
         while (tree.stepsRemaining() > 0) tree.stepOver();
 
-        return this;
+        return new ICFlatMap(registers, gates, regDependents, regDependencies, gateDependents, gateDependencies);
     }
 
     private int getMapIndex() {
@@ -476,14 +476,5 @@ public class ICStepThroughAssemblerImpl implements ICStepThroughAssembler, ICFla
     @Override public void stepIn() { tree.stepIn(); }
     @Override public void stepOut() { tree.stepOut(); }
     @Override public int stepsRemaining() { return tree.stepsRemaining(); }
-
-    @Override public Map<Integer, ICRegister> getRegisters() { return registers; }
-    @Override public Map<Integer, ICGate> getGates() { return gates; }
-    @Override public Map<Integer, ArrayList<Integer>> getRegDependents() { return regDependents; }
-    @Override public Map<Integer, ArrayList<Integer>> getRegDependencies() { return regDependencies; }
-    @Override public Map<Integer, ArrayList<Integer>> getGateDependents() { return gateDependents; }
-    @Override public Map<Integer, ArrayList<Integer>> getGateDependencies() { return gateDependencies; }
-    @Override public List<FETileMap> getExploredTileMaps() { return exploredTileMaps; }
-    @Override public List<ICFlatMap> getExploredFlatMaps() { return exploredFlatMaps; }
     //@formatter:on
 }
