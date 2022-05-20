@@ -2,10 +2,13 @@ package mrtjp.fengine.testcases;
 
 import mrtjp.fengine.api.FabricationEngine;
 import mrtjp.fengine.api.ICAssembler;
+import mrtjp.fengine.api.ICFlatMap;
 import mrtjp.fengine.framework.api.FabricationTest;
 import mrtjp.fengine.framework.api.FabricationTestClass;
 import mrtjp.fengine.simulate.ICGate;
 import mrtjp.fengine.simulate.ICRegister;
+import mrtjp.fengine.simulate.ICSimulation;
+import mrtjp.fengine.testimpl.FabricationEngineTestImpl;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -22,8 +25,12 @@ public class FabricationBasicTest {
     }
 
     // Override point to test other assemblers
+    protected FabricationEngine getEngine() {
+        return FabricationEngineTestImpl.INSTANCE;
+    }
+
     protected ICAssembler createAssembler() {
-        return FabricationEngine.newAssembler();
+        return getEngine().newAssembler();
     }
 
     @FabricationTest (order = 0)
@@ -109,5 +116,38 @@ public class FabricationBasicTest {
 
             System.out.printf("Gate %s (id: %d) writes to %s and reads from %s%n", gate, gateID, actualWritesSet, actualReadsSet);
         }
+    }
+
+    @FabricationTest (order = 6)
+    public void testFlatMapSerializationRoundTrip() {
+
+        // Serialize the map
+        System.out.println("Serializing root flat map");
+        String serialized = getEngine().serializeFlatMap(scenario.rootFlatMap);
+        System.out.println(serialized);
+
+        // De-serialize and re-serialize
+        ICFlatMap deserialized = getEngine().deserializeFlatMap(serialized);
+        String reserialized = getEngine().serializeFlatMap(deserialized);
+
+        assertEquals(serialized, reserialized);
+        // TODO assert scenario.rootFlatMap == deserialized
+    }
+
+    @FabricationTest (order = 7)
+    public void testSimulationSerializationRoundTrip() {
+
+        // Create simulation
+        ICSimulation simulation = new ICSimulation(scenario.rootFlatMap);
+
+        // Serialize
+        String serialized = getEngine().serializeSimulation(simulation);
+        System.out.println(serialized);
+
+        // Deserialize and re-serialize
+        ICSimulation deserialized = getEngine().deserializeSimulation(serialized);
+        String reserialized = getEngine().serializeSimulation(deserialized);
+
+        assertEquals(serialized, reserialized);
     }
 }
