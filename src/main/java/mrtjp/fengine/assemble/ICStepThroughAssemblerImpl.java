@@ -74,9 +74,8 @@ public class ICStepThroughAssemblerImpl implements ICStepThroughAssembler {
     public void addRegister(int id, ICRegister r) {
 
         if (registers.containsKey(id)) {
-            if (getMapIndex() == 0)
-                throw new IllegalArgumentException("Register ID " + id + " already exists");
-            else
+            //TODO enforce only static registers do this
+            System.out.println("Warning: Dropping register " + id + " due to duplicate ID");
                 return; // Duplicates are allowed in nested maps, but are ignored. They are expected to be remapped.
         }
 
