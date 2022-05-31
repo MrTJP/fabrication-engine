@@ -23,8 +23,8 @@ public class ICSimulation {
             Map<Integer, ArrayList<Integer>> gateInputsMap,
             Map<Integer, ArrayList<Integer>> gateOutputsMap
     ) {
-        int regCount = maxKey(registerMap) + 1;
-        int gateCount = maxKey(gateMap) + 1;
+        int regCount = registerMap.isEmpty() ? 0 : maxKey(registerMap) + 1;
+        int gateCount = gateMap.isEmpty() ? 0 : maxKey(gateMap) + 1;
 
         registers = expandIntoArray(registerMap, new ICRegister[regCount]);
         gates = expandIntoArray(gateMap, new ICGate[gateCount]);
