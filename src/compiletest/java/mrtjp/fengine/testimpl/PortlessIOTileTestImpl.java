@@ -47,11 +47,11 @@ public class PortlessIOTileTestImpl implements FETile {
     public void locate(IPathFinder pathFinder) {
         if (!isGlobalInput) { //Pathfinding only necessary for output IO tile, since they have an incoming register
             PathFinderResult pfr = pathFinder.doPathFinding((d, p) -> d == ioDir);
-            if (pfr.inputRegisters.size() > 1) {
-                System.out.println("ERR: Unexpected multiple drivers: " + pfr.inputRegisters);
+            if (pfr.outputRegisters.size() > 1) {
+                System.out.println("ERR: Unexpected multiple drivers: " + pfr.outputRegisters);
             }
-            if (!pfr.inputRegisters.isEmpty()) {
-                regId = pfr.inputRegisters.get(0);
+            if (!pfr.outputRegisters.isEmpty()) {
+                regId = pfr.outputRegisters.get(0);
             }
         }
     }

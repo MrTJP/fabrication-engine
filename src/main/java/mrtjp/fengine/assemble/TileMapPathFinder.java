@@ -65,13 +65,13 @@ public class TileMapPathFinder { //TODO implement Stepper
         int port = prev.inputPort;
 
         tile.getOutputRegister(dir, port).ifPresent(outputRegID -> {
-            portToInputRegisters.computeIfAbsent(initialPort, i -> new HashSet<>()).add(outputRegID);
-            manifest.addInputPropagationTrail(outputRegID, prev);
+            portToOutputRegisters.computeIfAbsent(initialPort, i -> new HashSet<>()).add(outputRegID);
+            manifest.addOutputPropagationTrail(outputRegID, prev);
         });
 
         tile.getInputRegister(dir, port).ifPresent(inputRegID -> {
-            portToOutputRegisters.computeIfAbsent(initialPort, i -> new HashSet<>()).add(inputRegID);
-            manifest.addOutputPropagationTrail(inputRegID, prev);
+            portToInputRegisters.computeIfAbsent(initialPort, i -> new HashSet<>()).add(inputRegID);
+            manifest.addInputPropagationTrail(inputRegID, prev);
         });
     }
 

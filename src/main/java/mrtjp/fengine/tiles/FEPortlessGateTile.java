@@ -80,11 +80,11 @@ public abstract class FEPortlessGateTile implements FETile {
             if ((getInDirMask() & 1 << dir) != 0) {
                 int finalDir = dir;
                 PathFinderResult pfr = pathFinder.doPathFinding((d, p) -> d == finalDir);
-                if (pfr.inputRegisters.size() > 1) {
-                    System.out.println("ERR: Unexpected multiple drivers: " + pfr.inputRegisters);
+                if (pfr.outputRegisters.size() > 1) {
+                    System.out.println("ERR: Unexpected multiple drivers: " + pfr.outputRegisters);
                 }
-                if (!pfr.inputRegisters.isEmpty()) {
-                    inputRegisters[dir] = pfr.inputRegisters.get(0);
+                if (!pfr.outputRegisters.isEmpty()) {
+                    inputRegisters[dir] = pfr.outputRegisters.get(0);
                 }
             }
         }
