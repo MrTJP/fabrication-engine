@@ -1,6 +1,6 @@
 package mrtjp.fengine.testimpl;
 
-import mrtjp.fengine.assemble.PathFinder;
+import mrtjp.fengine.api.IPathFinder;
 import mrtjp.fengine.assemble.PathFinderResult;
 import mrtjp.fengine.simulate.StaticByteRegister;
 import mrtjp.fengine.tiles.FETile;
@@ -44,7 +44,7 @@ public class PortlessIOTileTestImpl implements FETile {
     }
 
     @Override
-    public void locate(PathFinder pathFinder) {
+    public void locate(IPathFinder pathFinder) {
         if (!isGlobalInput) { //Pathfinding only necessary for output IO tile, since they have an incoming register
             PathFinderResult pfr = pathFinder.doPathFinding((d, p) -> d == ioDir);
             if (pfr.inputRegisters.size() > 1) {

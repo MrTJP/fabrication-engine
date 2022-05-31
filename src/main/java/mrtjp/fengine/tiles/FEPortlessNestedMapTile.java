@@ -1,6 +1,6 @@
 package mrtjp.fengine.tiles;
 
-import mrtjp.fengine.assemble.PathFinder;
+import mrtjp.fengine.api.IPathFinder;
 import mrtjp.fengine.assemble.PathFinderResult;
 
 import java.util.Arrays;
@@ -70,7 +70,7 @@ public abstract class FEPortlessNestedMapTile implements FETile {
     }
 
     @Override
-    public void locate(PathFinder pathFinder) {
+    public void locate(IPathFinder pathFinder) {
         for (int dir = 0; dir < 6; dir++) {
             if ((getInDirMask() & 1 << dir) != 0) {
                 int finalDir = dir;

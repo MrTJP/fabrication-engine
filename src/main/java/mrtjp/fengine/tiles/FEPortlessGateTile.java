@@ -1,7 +1,6 @@
 package mrtjp.fengine.tiles;
 
-import mrtjp.fengine.api.ICAssembler;
-import mrtjp.fengine.assemble.PathFinder;
+import mrtjp.fengine.api.IPathFinder;
 import mrtjp.fengine.assemble.PathFinderResult;
 import mrtjp.fengine.simulate.ICGate;
 import mrtjp.fengine.simulate.ICRegister;
@@ -76,7 +75,7 @@ public abstract class FEPortlessGateTile implements FETile {
     }
 
     @Override
-    public void locate(PathFinder pathFinder) {
+    public void locate(IPathFinder pathFinder) {
         for (int dir = 0; dir < 6; dir++) {
             if ((getInDirMask() & 1 << dir) != 0) {
                 int finalDir = dir;

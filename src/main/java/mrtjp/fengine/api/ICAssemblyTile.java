@@ -1,6 +1,5 @@
 package mrtjp.fengine.api;
 
-import mrtjp.fengine.assemble.PathFinder;
 import mrtjp.fengine.simulate.ICGate;
 import mrtjp.fengine.simulate.ICRegister;
 import mrtjp.fengine.tiles.FETileMap;
@@ -36,10 +35,21 @@ public interface ICAssemblyTile {
      *
      * @param pathFinder Pathfinder to be used to locate input registers from the map
      */
-    default void locate(PathFinder pathFinder) { }
+    default void locate(IPathFinder pathFinder) { }
 
     /**
-     * Assembly pass 2:
+     * Assembly pass 3:
+     * <p>
+     * Search pathfinder manifest for any registers of interest. Typically, used by propagation-capable
+     * tiles to figure out which signals passed through them by peeking at pathfinding results of other
+     * tiles.
+     *
+     * @param manifest The manifest to search
+     */
+    default void searchManifest(IPathFinderManifest manifest) { }
+
+    /**
+     * Assembly pass 4:
      * <p>
      * Use provided remap registry to declare necessary remaps
      *
@@ -48,7 +58,7 @@ public interface ICAssemblyTile {
     default void registerRemaps(RemapRegistry remapRegistry) { }
 
     /**
-     * Assembly pass 3:
+     * Assembly pass 5:
      * <p>
      * Check all register IDs for remap and adjust to new value if necessary.
      *
@@ -57,7 +67,7 @@ public interface ICAssemblyTile {
     default void consumeRemaps(RemapProvider remapProvider) { }
 
     /**
-     * Assembly pass 4:
+     * Assembly pass 6:
      * <p>
      * Add registers and gates to the assembler
      *
