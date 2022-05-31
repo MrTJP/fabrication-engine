@@ -26,6 +26,7 @@ public class ICAssemblerImpl implements ICAssembler, ICAssemblyTile.Allocator, I
     private final Queue<TileMapRemapPair> openTileMaps = new LinkedList<>();
     private final Queue<FlatMapRemapPair> openFlatMaps = new LinkedList<>();
 
+    private final PathFinderManifest pathFinderManifest = new PathFinderManifest();
     private final Map<Integer, Integer> registerIDRemaps = new HashMap<>();
 
     private int nextRegID = 0;
@@ -117,6 +118,7 @@ public class ICAssemblerImpl implements ICAssembler, ICAssemblyTile.Allocator, I
 
     private void mergeTileMap(FETileMap map, Map<Integer, Integer> remaps) {
         System.out.println("Assembly merge tile map setup");
+        pathFinderManifest.clear();
         registerIDRemaps.clear();
         registerIDRemaps.putAll(remaps);
 
@@ -131,24 +133,35 @@ public class ICAssemblerImpl implements ICAssembler, ICAssemblyTile.Allocator, I
         System.out.println("Assembly Phase 2: Pathfinding and remap declarations");
         for (FETileMap.TileMapEntry entry : entries) {
             System.out.println("Pathfinding at " + entry.getCoord());
-            PathFinder pathFinder = new PathFinder(map, entry.getCoord());
+            PathFinder pathFinder = new PathFinder(map, entry.getCoord(), pathFinderManifest);
             entry.getTile().locate(pathFinder);
+        }
+
+        // Phase 3: Manifest search
+        for (FETileMap.TileMapEntry entry : entries) {
+            entry.getTile().searchManifest(pathFinderManifest.getManifest(entry.getCoord()));
+        }
+
+        // Phase 4: Register remaps
+        System.out.println("Assembly Phase 4: Register remaps");
+        for (FETileMap.TileMapEntry entry : entries) {
             entry.getTile().registerRemaps(this);
         }
 
-        // Phase 3: Remapping
-        System.out.println("Assembly Phase 3: Remapping");
+        // Phase 5: Consume Remaps
+        System.out.println("Assembly Phase 5: Consume remaps");
         for (FETileMap.TileMapEntry entry : entries) {
             entry.getTile().consumeRemaps(this);
         }
 
-        // Phase 4: Collect
-        System.out.println("Assembly Phase 4: Register and Gate collection");
+        // Phase 6: Collect
+        System.out.println("Assembly Phase 6: Register and Gate collection");
         for (FETileMap.TileMapEntry entry : entries) {
             entry.getTile().collect(this);
         }
 
         System.out.println("Assembly merge tile map cleanup");
+        pathFinderManifest.clear();
         registerIDRemaps.clear();
     }
 

@@ -17,64 +17,84 @@ public class TileMapPathFinder { //TODO implement Stepper
     private final HashMap<Integer, HashSet<Integer>> portToOutputRegisters = new HashMap<>();
     private final HashMap<Integer, HashSet<Integer>> portToInputRegisters = new HashMap<>();
 
+    private final PathFinderManifest manifest;
     private final FETileMap map;
 
-    public TileMapPathFinder(FETileMap map, TileCoord start, PropagationFunction startPropFunc) {
+    public TileMapPathFinder(PathFinderManifest manifest, FETileMap map, TileCoord start, PropagationFunction startPropFunc) {
+        this.manifest = manifest;
         this.map = map;
         openInitial(start, startPropFunc);
     }
 
     private void openInitial(TileCoord coord, PropagationFunction propFunc) {
-        openNext(coord, propFunc, PathFinderNode::new);
-    }
 
-    private void openFrom(PathFinderNode prev, TileCoord coord, PropagationFunction propFunc) {
-        openNext(coord, propFunc, prev::moveTo);
-    }
-
-    private void openNext(TileCoord coord, PropagationFunction propFunc, PathFinderNodeFactory nodeFactory) {
-        for (int s = 0; s < 6; s++) {
-            for (int p = 0; p < 16; p++) {
-                if (propFunc.canPropagate(s, p)) {
-                    PathFinderNode move = nodeFactory.newNode(coord, s, p);
-                    if (!openSet.contains(move) && !closedSet.contains(move)) {
-                        open.add(move);
-                        openSet.add(move);
-                    }
-                }
+        traverse(propFunc, (s, p) -> {
+            TileCoord nextPos = coord.offset(s);
+            int inputDir = TileCoord.oppositeDir(s);
+            PathFinderNode opened = new PathFinderNode(nextPos, inputDir, p);
+            if (!openSet.contains(opened) && !closedSet.contains(opened)) {
+                open.add(opened);
+                openSet.add(opened);
             }
-        }
+        });
     }
 
-    private void collect(PathFinderNode root, FETile tile, TileCoord coord, int dir, int port) {
-        final int initialPort = root.port; // Initial port at start of pathfinding which lead to discovery of this new tile
+    private void openNext(PathFinderNode prev) {
+
+        FETile tile = map.getTile(prev.pos).orElse(null);
+        if (tile == null) return;
+
+        collect(prev, tile);
+
+        PropagationFunction propFunc = tile.propagationFunc(prev.inputDir, prev.inputPort);
+        traverse(propFunc, (s, p) -> {
+            TileCoord nextPos = prev.pos.offset(s);
+            int inputDir = TileCoord.oppositeDir(s);
+            PathFinderNode opened = prev.moveTo(nextPos, inputDir, p);
+            if (!openSet.contains(opened) && !closedSet.contains(opened)) {
+                open.add(opened);
+                openSet.add(opened);
+            }
+        });
+    }
+
+    private void collect(PathFinderNode prev, FETile tile) {
+
+        int initialPort = prev.getRootNode().inputPort;
+        int dir = prev.inputDir;
+        int port = prev.inputPort;
 
         tile.getOutputRegister(dir, port).ifPresent(outputRegID -> {
-            portToInputRegisters.computeIfAbsent(initialPort, i -> new HashSet<>());
-            portToInputRegisters.get(initialPort).add(outputRegID);
+            portToInputRegisters.computeIfAbsent(initialPort, i -> new HashSet<>()).add(outputRegID);
+            manifest.addInputPropagationTrail(outputRegID, prev);
         });
 
         tile.getInputRegister(dir, port).ifPresent(inputRegID -> {
-            portToOutputRegisters.computeIfAbsent(initialPort, i -> new HashSet<>());
-            portToOutputRegisters.get(initialPort).add(inputRegID);
+            portToOutputRegisters.computeIfAbsent(initialPort, i -> new HashSet<>()).add(inputRegID);
+            manifest.addOutputPropagationTrail(inputRegID, prev);
         });
+    }
+
+    private void traverse(PropagationFunction propFunc, TraverseFunc traverseFunc) {
+        for (int s = 0; s < 6; s++) {
+            for (int p = 0; p < 16; p++) {
+                if (propFunc.canPropagate(s, p)) traverseFunc.traverse(s, p);
+            }
+        }
     }
 
     public void step() {
         if (open.isEmpty()) return;
 
+        // Get next node on queue
         PathFinderNode next = open.poll();
         openSet.remove(next);
 
-        TileCoord newPos = next.pos.offset(next.dir);
-        map.getTile(newPos).ifPresent(tile -> {
-            int fromDir = TileCoord.oppositeDir(next.dir);
-            PropagationFunction pfunc = tile.propagationFunc(fromDir, next.port);
-            collect(next.getRootNode(), tile, newPos, fromDir, next.port);
-            openFrom(next.getRootNode(), newPos, pfunc);
+        // Operate on it and queue additional nodes
+        openNext(next);
 
-            closedSet.add(next);
-        });
+        // Close this node
+        closedSet.add(next);
     }
 
     public boolean isFinished() {
@@ -97,8 +117,8 @@ public class TileMapPathFinder { //TODO implement Stepper
         return new PathFinderResult(outputs, inputs);
     }
 
-    private interface PathFinderNodeFactory {
+    private interface TraverseFunc {
 
-        PathFinderNode newNode(TileCoord coord, int dir, int port);
+        void traverse(int dir, int port);
     }
 }

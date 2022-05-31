@@ -20,11 +20,14 @@ public interface ICStepThroughAssembler extends ICAssembler, Stepper {
             PHASE1_ALLOC,
         MERGE_TILE_MAP_PHASE2,
             PHASE2_PATHFIND,
-            PHASE2_REGISTER_REMAPS,
         MERGE_TILE_MAP_PHASE3,
-            PHASE3_CONSUME_REMAPS,
+            PHASE3_PF_MANIFEST_SEARCH,
         MERGE_TILE_MAP_PHASE4,
-            PHASE4_COLLECT,
+            PHASE4_REGISTER_REMAPS,
+        MERGE_TILE_MAP_PHASE5,
+            PHASE5_CONSUME_REMAPS,
+        MERGE_TILE_MAP_PHASE6,
+            PHASE6_COLLECT,
         MERGE_TILE_MAP_POST
     }
 
