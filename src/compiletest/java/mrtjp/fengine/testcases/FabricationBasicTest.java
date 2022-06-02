@@ -9,6 +9,7 @@ import mrtjp.fengine.simulate.ICGate;
 import mrtjp.fengine.simulate.ICRegister;
 import mrtjp.fengine.simulate.ICSimulation;
 import mrtjp.fengine.testimpl.FabricationEngineTestImpl;
+import mrtjp.fengine.testimpl.PortlessWireTileImpl;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -119,6 +120,23 @@ public class FabricationBasicTest {
     }
 
     @FabricationTest (order = 6)
+    public void testWireInputs() {
+
+        Map<ICRegister, Integer> registerIDLookup = scenario.rootFlatMap.getRegisters().entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
+
+        for (Map.Entry<PortlessWireTileImpl, Set<ICRegister>> entry : scenario.wireTileDrivers.entrySet()) {
+
+            //Map set of ICRegisters to set of register IDs
+            Set<Integer> regIds = entry.getValue().stream()
+                    .map(registerIDLookup::get)
+                    .collect(Collectors.toSet());
+
+            assertEquals(entry.getKey().inputRegisters, regIds, "Wire's input list did not match expected");
+        }
+    }
+
+    @FabricationTest (order = 7)
     public void testFlatMapSerializationRoundTrip() {
 
         // Serialize the map
@@ -134,7 +152,7 @@ public class FabricationBasicTest {
         // TODO assert scenario.rootFlatMap == deserialized
     }
 
-    @FabricationTest (order = 7)
+    @FabricationTest (order = 8)
     public void testSimulationSerializationRoundTrip() {
 
         // Create simulation

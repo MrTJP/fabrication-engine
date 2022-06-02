@@ -62,15 +62,22 @@ public class SimpleOutputToInput extends FabricationTestScenario {
         map.addTile(gateACoord, gateA);
 
         // Wires between A <--> B
+        PortlessWireTileImpl[] wires = new PortlessWireTileImpl[zDist];
         for (int i = 0; i < zDist; i++) {
             TileCoord wireCoord = new TileCoord(0, 0, z++);
-            map.addTile(wireCoord, new PortlessWireTileImpl(bitSouth | bitNorth));
+            wires[i] = new PortlessWireTileImpl(bitSouth | bitNorth);
+            map.addTile(wireCoord, wires[i]);
         }
 
         // Gate B
         TileCoord gateBCoord = new TileCoord(0, 0, z++);
         PortlessGateTileImpl gateB = new PortlessGateTileImpl("B", bitNorth, 0);
         map.addTile(gateBCoord, gateB);
+
+        // Wire registers
+        for (PortlessWireTileImpl wire : wires) {
+            addWireTileInput(wire, gateA.registers[dirSouth]);
+        }
 
         // Declare expected gates and registers
         setRootMap(map);

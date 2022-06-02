@@ -3,6 +3,7 @@ package mrtjp.fengine.testcases;
 import mrtjp.fengine.api.ICFlatMap;
 import mrtjp.fengine.simulate.ICGate;
 import mrtjp.fengine.simulate.ICRegister;
+import mrtjp.fengine.testimpl.PortlessWireTileImpl;
 import mrtjp.fengine.tiles.FEBasicTileMap;
 
 import java.util.HashSet;
@@ -18,6 +19,8 @@ public abstract class FabricationTestScenario {
     public FEBasicTileMap rootMap;
     public ICFlatMap rootFlatMap;
 
+    public Map<PortlessWireTileImpl, Set<ICRegister>> wireTileDrivers = new LinkedHashMap<>();
+
     public Set<ICGate> expectedGates = new HashSet<>();
     public Set<ICRegister> expectedRegisters = new HashSet<>();
 
@@ -32,6 +35,11 @@ public abstract class FabricationTestScenario {
 
     public void setRootMap(FEBasicTileMap rootMap) { this.rootMap = rootMap; }
 
+    //region TileMap validations
+    public void addWireTileInput(PortlessWireTileImpl wireTile, ICRegister register) { wireTileDrivers.computeIfAbsent(wireTile, k -> new HashSet<>()).add(register); }
+    //endregion
+
+    //region Flatmap validations
     public void addGate(ICGate gate) {
         expectedGates.add(gate);
         gateReads.computeIfAbsent(gate, k -> new HashSet<>());
@@ -42,6 +50,7 @@ public abstract class FabricationTestScenario {
 
     public void gateWritesToRegister(ICGate gate, ICRegister register) { gateWrites.get(gate).add(register); }
     public void gateReadsFromRegister(ICGate gate, ICRegister register) { gateReads.get(gate).add(register); }
+    //endregion
     //@formatter:on
 
     public abstract void init();
