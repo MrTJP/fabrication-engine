@@ -78,8 +78,25 @@ public class ICSimulation {
         return registers[regID].getByteVal();
     }
 
+    public long getRegLongVal(int regID3, int regID2, int regID1, int regID0) {
+
+        long i = 0;
+        i |= (long) (getRegByteVal(regID3) & 0xFF) << 24;
+        i |= (long) (getRegByteVal(regID2) & 0xFF) << 16;
+        i |= (long) (getRegByteVal(regID1) & 0xFF) << 8;
+        i |= getRegByteVal(regID0) & 0xFF;
+        return i;
+    }
+
     public void queueRegByteVal(int regID, byte newVal) {
         if (registers[regID].queueByteVal(newVal)) { changeQueue.add(regID); }
+    }
+
+    public void queueRegLongVal(int regID3, int regID2, int regID1, int regID0, long newVal) {
+        queueRegByteVal(regID3, (byte) (newVal >> 24));
+        queueRegByteVal(regID2, (byte) (newVal >> 16));
+        queueRegByteVal(regID1, (byte) (newVal >> 8));
+        queueRegByteVal(regID0, (byte) (newVal));
     }
 
     public boolean propagate(ICSimulationCallback callback) {
