@@ -23,8 +23,10 @@ class Commit:
         self.commitMessage = commitMessage
 
 def getTags():
-    prevTag = shellCmd('git describe --tags HEAD^ --abbrev=0')[1][0]
-    currentTag = shellCmd('git describe --tags HEAD --abbrev=0')[1][0]
+    prevTagList = shellCmd('git describe --tags HEAD^ --abbrev=0')[1]
+    prevTag = prevTagList[0] if prevTagList  else shellCmd('git rev-parse --short $(git rev-list HEAD | tail -n 1)')[1][0]
+    currentTagList = shellCmd('git describe --tags HEAD --abbrev=0')[1]
+    currentTag = currentTagList[0] if currentTagList else shellCmd('git rev-parse --short HEAD')[1][0]
     if currentTag == prevTag:
         currentTag = shellCmd('git rev-parse --short HEAD')[1][0]
     return (prevTag, currentTag)
