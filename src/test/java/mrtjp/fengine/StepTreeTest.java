@@ -22,12 +22,12 @@ public class StepTreeTest {
         StepTree.StepTreeEventReceiver<String, Void> receiver = new StepTree.StepTreeEventReceiver<String, Void>() {
             @Override
             public void onStepExecuted(List<Integer> treePath, String descriptor, Void result) {
-                System.out.println("Step executed: " + descriptor);
+                System.out.println("Step executed: " + descriptor + " at " + treePath);
                 executedSteps.add(descriptor);
             }
             @Override
             public void onStepAdded(List<Integer> treePath, String descriptor) {
-                System.out.println("Step added: " + descriptor);
+                System.out.println("Step added: " + descriptor + " at " + treePath);
                 addedSteps.add(descriptor);
             }
         };

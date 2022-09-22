@@ -39,6 +39,11 @@ public class ICStepThroughAssemblerImpl implements ICStepThroughAssembler {
 
     private ICStepThroughAssembler.EventReceiver eventReceiver = null;
 
+    private boolean assemblyStarted = false;
+
+    public ICStepThroughAssemblerImpl() {
+    }
+
     @Override
     public int allocRegisterID() {
         return nextRegID++;
@@ -314,9 +319,16 @@ public class ICStepThroughAssemblerImpl implements ICStepThroughAssembler {
         return new AssemblerStepResult(); // TODO: Return something useful
     }
 
+    private void checkStarted() {
+        if (!assemblyStarted) {
+            tree.addStep(CHECK_OPEN_TILE_MAPS, this::checkOpenTileMapTask);
+            assemblyStarted = true;
+        }
+    }
+
     @Override
     public ICFlatMap result() {
-        tree.addStep(CHECK_OPEN_TILE_MAPS, this::checkOpenTileMapTask);
+        checkStarted();
 
         while (tree.stepsRemaining() > 0) tree.stepOver();
 
@@ -494,9 +506,10 @@ public class ICStepThroughAssemblerImpl implements ICStepThroughAssembler {
 
     //@formatter:off
     @Override public void setEventReceiver(EventReceiver receiver) { eventReceiver = receiver; }
-    @Override public void stepOver() { tree.stepOver(); }
-    @Override public void stepIn() { tree.stepIn(); }
-    @Override public void stepOut() { tree.stepOut(); }
+    @Override public void stepOver() { checkStarted(); tree.stepOver(); }
+    @Override public void stepIn() { checkStarted(); tree.stepIn(); }
+    @Override public void stepOut() { checkStarted(); tree.stepOut(); }
     @Override public int stepsRemaining() { return tree.stepsRemaining(); }
+    @Override public boolean isDone() { return assemblyStarted && tree.isDone(); }
     //@formatter:on
 }
