@@ -34,6 +34,10 @@ public class FabricationBasicTest {
         return getEngine().newAssembler();
     }
 
+    protected ICFlatMap runAssembler(ICAssembler assembler) {
+        return assembler.result();
+    }
+
     @FabricationTest (order = 0)
     public void testValidateScenario() {
 
@@ -54,7 +58,7 @@ public class FabricationBasicTest {
         for (int id : scenario.staticRegisters.keySet()) { assembler.allocRegisterID(id); }
 
         // Run the assembler
-        scenario.rootFlatMap = assembler.result();
+        scenario.rootFlatMap = runAssembler(assembler);
 
         System.out.println("Test case assembled");
     }
