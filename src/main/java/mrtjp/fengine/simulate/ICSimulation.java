@@ -64,6 +64,123 @@ public class ICSimulation {
         gates[gateID].compute(this, gateInputs[gateID], gateOutputs[gateID]);
     }
 
+    //region Register read
+    public byte getRegByteVal(int r) {
+        return registers[r].getByteVal();
+    }
+
+    public short getRegShortVal(int r1, int r0) {
+        short i = 0;
+        i |= (short) ((getRegByteVal(r1) & 0xFF) << 8);
+        i |= (short) (getRegByteVal(r0) & 0xFF);
+        return i;
+    }
+
+    public int getRegIntVal(int r3, int r2, int r1, int r0) {
+        int i = 0;
+        i |= (getRegByteVal(r3) & 0xFF) << 24;
+        i |= (getRegByteVal(r2) & 0xFF) << 16;
+        i |= (getRegByteVal(r1) & 0xFF) << 8;
+        i |= getRegByteVal(r0) & 0xFF;
+        return i;
+    }
+
+    public long getRegLongVal(int r7, int r6, int r5, int r4, int r3, int r2, int r1, int r0) {
+        long i = 0;
+        i |= (long) (getRegByteVal(r7) & 0xFF) << 56;
+        i |= (long) (getRegByteVal(r6) & 0xFF) << 48;
+        i |= (long) (getRegByteVal(r5) & 0xFF) << 40;
+        i |= (long) (getRegByteVal(r4) & 0xFF) << 32;
+        i |= (long) (getRegByteVal(r3) & 0xFF) << 24;
+        i |= (long) (getRegByteVal(r2) & 0xFF) << 16;
+        i |= (long) (getRegByteVal(r1) & 0xFF) << 8;
+        i |= (long) (getRegByteVal(r0) & 0xFF);
+        return i;
+    }
+
+    public short getRegShortVal(int[] regIDs, int offset) {
+        short i = 0;
+        i |= (short) ((getRegByteVal(regIDs[offset]) & 0xFF) << 8);
+        i |= (short) (getRegByteVal(regIDs[offset + 1]) & 0xFF);
+        return i;
+    }
+
+    public int getRegIntVal(int[] regIDs, int offset) {
+        int i = 0;
+        i |= (getRegByteVal(regIDs[offset    ]) & 0xFF) << 24;
+        i |= (getRegByteVal(regIDs[offset + 1]) & 0xFF) << 16;
+        i |= (getRegByteVal(regIDs[offset + 2]) & 0xFF) << 8;
+        i |= (getRegByteVal(regIDs[offset + 3]) & 0xFF);
+        return i;
+    }
+
+    public long getRegLongVal(int[] regIDs, int offset) {
+        long i = 0;
+        i |= (long) (getRegByteVal(regIDs[offset    ]) & 0xFF) << 56;
+        i |= (long) (getRegByteVal(regIDs[offset + 1]) & 0xFF) << 48;
+        i |= (long) (getRegByteVal(regIDs[offset + 2]) & 0xFF) << 40;
+        i |= (long) (getRegByteVal(regIDs[offset + 3]) & 0xFF) << 32;
+        i |= (long) (getRegByteVal(regIDs[offset + 4]) & 0xFF) << 24;
+        i |= (long) (getRegByteVal(regIDs[offset + 5]) & 0xFF) << 16;
+        i |= (long) (getRegByteVal(regIDs[offset + 6]) & 0xFF) << 8;
+        i |= (long) (getRegByteVal(regIDs[offset + 7]) & 0xFF);
+        return i;
+    }
+    //endregion
+
+    //region Register write
+    public void queueRegByteVal(int regID, byte newVal) {
+        if (registers[regID].queueByteVal(newVal)) { changeQueue.add(regID); }
+    }
+
+    public void queueRegShortVal(int r1, int r0, short newVal) {
+        queueRegByteVal(r1, (byte) (newVal >> 8));
+        queueRegByteVal(r0, (byte) newVal);
+    }
+
+    public void queueRegIntVal(int r3, int r2, int r1, int r0, int newVal) {
+        queueRegByteVal(r3, (byte) (newVal >> 24));
+        queueRegByteVal(r2, (byte) (newVal >> 16));
+        queueRegByteVal(r1, (byte) (newVal >> 8));
+        queueRegByteVal(r0, (byte) newVal);
+    }
+
+    public void queueRegLongVal(int r7, int r6, int r5, int r4, int r3, int r2, int r1, int r0, long newVal) {
+        queueRegByteVal(r7, (byte) (newVal >> 56));
+        queueRegByteVal(r6, (byte) (newVal >> 48));
+        queueRegByteVal(r5, (byte) (newVal >> 40));
+        queueRegByteVal(r4, (byte) (newVal >> 32));
+        queueRegByteVal(r3, (byte) (newVal >> 24));
+        queueRegByteVal(r2, (byte) (newVal >> 16));
+        queueRegByteVal(r1, (byte) (newVal >> 8));
+        queueRegByteVal(r0, (byte) newVal);
+    }
+
+    public void queueRegShortVal(int[] regIDs, int offset, short newVal) {
+        queueRegByteVal(regIDs[offset    ], (byte) (newVal >> 8));
+        queueRegByteVal(regIDs[offset + 1], (byte) newVal);
+    }
+
+    public void queueRegIntVal(int[] regIDs, int offset, int newVal) {
+        queueRegByteVal(regIDs[offset    ], (byte) (newVal >> 24));
+        queueRegByteVal(regIDs[offset + 1], (byte) (newVal >> 16));
+        queueRegByteVal(regIDs[offset + 2], (byte) (newVal >> 8));
+        queueRegByteVal(regIDs[offset + 3], (byte) newVal);
+    }
+
+    public void queueRegLongVal(int[] regIDs, int offset, long newVal) {
+        queueRegByteVal(regIDs[offset    ], (byte) (newVal >> 56));
+        queueRegByteVal(regIDs[offset + 1], (byte) (newVal >> 48));
+        queueRegByteVal(regIDs[offset + 2], (byte) (newVal >> 40));
+        queueRegByteVal(regIDs[offset + 3], (byte) (newVal >> 32));
+        queueRegByteVal(regIDs[offset + 4], (byte) (newVal >> 24));
+        queueRegByteVal(regIDs[offset + 5], (byte) (newVal >> 16));
+        queueRegByteVal(regIDs[offset + 6], (byte) (newVal >> 8));
+        queueRegByteVal(regIDs[offset + 7], (byte) newVal);
+    }
+    //endregion
+
+    //region Simulation control
     public boolean computeAll(ICSimulationCallback callback) {
 
         for (int id = 0; id < gates.length; id++) {
@@ -72,31 +189,6 @@ public class ICSimulation {
 
         propagate(callback);
         return changeQueue.isEmpty();
-    }
-
-    public byte getRegByteVal(int regID) {
-        return registers[regID].getByteVal();
-    }
-
-    public long getRegLongVal(int regID3, int regID2, int regID1, int regID0) {
-
-        long i = 0;
-        i |= (long) (getRegByteVal(regID3) & 0xFF) << 24;
-        i |= (long) (getRegByteVal(regID2) & 0xFF) << 16;
-        i |= (long) (getRegByteVal(regID1) & 0xFF) << 8;
-        i |= getRegByteVal(regID0) & 0xFF;
-        return i;
-    }
-
-    public void queueRegByteVal(int regID, byte newVal) {
-        if (registers[regID].queueByteVal(newVal)) { changeQueue.add(regID); }
-    }
-
-    public void queueRegLongVal(int regID3, int regID2, int regID1, int regID0, long newVal) {
-        queueRegByteVal(regID3, (byte) (newVal >> 24));
-        queueRegByteVal(regID2, (byte) (newVal >> 16));
-        queueRegByteVal(regID1, (byte) (newVal >> 8));
-        queueRegByteVal(regID0, (byte) (newVal));
     }
 
     public boolean propagate(ICSimulationCallback callback) {
@@ -149,4 +241,5 @@ public class ICSimulation {
 
         return !allChanges.isEmpty();
     }
+    //endregion
 }
