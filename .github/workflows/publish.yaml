@@ -129,7 +129,7 @@ jobs:
             CHANGELOG.txt
 
       - name: Update badge
-        uses: schneegans/dynamic-badges-action@v1.2.0
+        uses: schneegans/dynamic-badges-action@v1.7.0
         with:
           auth: ${{ secrets.GIST_SECRET }}
           gistID: 405427e70bea42393b7b8e4548393e9a
