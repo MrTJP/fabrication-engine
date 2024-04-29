@@ -105,9 +105,10 @@ jobs:
           AUTO_GENERATED_VERSION: ${{ steps.versioning.outputs.version }}
 
       - name: Upload coverage report
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v4
         with:
           fail_ci_if_error: true
+          token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Publish to Maven
         if: ${{ steps.release_type.outputs.publish_maven == 'true' }}
