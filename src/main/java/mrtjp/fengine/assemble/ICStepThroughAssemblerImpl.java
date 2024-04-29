@@ -155,7 +155,7 @@ public class ICStepThroughAssemblerImpl implements ICStepThroughAssembler {
 
         // Phase 2: Pathfinding and remap assignment
         tree.addStep(MERGE_TILE_MAP_PHASE2, () -> {
-            System.out.println("Assembly Phase 2: Pathfinding and remap declarations");
+            System.out.println("Assembly Phase 2: Pathfinding");
             for (FETileMap.TileMapEntry entry : entries) {
                 tree.addStep(PHASE2_PATHFIND, () -> {
                     System.out.println("Pathfinding at " + entry.getCoord());
@@ -170,7 +170,7 @@ public class ICStepThroughAssemblerImpl implements ICStepThroughAssembler {
 
         // Phase 3: Pathfinder history search
         tree.addStep(MERGE_TILE_MAP_PHASE3, () -> {
-            System.out.println("Assembly Phase 2: Pathfinding and remap declarations");
+            System.out.println("Assembly Phase 2: Pathfinding lookup");
             for (FETileMap.TileMapEntry entry : entries) {
                 tree.addStep(PHASE3_PF_MANIFEST_SEARCH, () -> {
                     System.out.println("Searching manifest at " + entry.getCoord());
@@ -184,7 +184,7 @@ public class ICStepThroughAssemblerImpl implements ICStepThroughAssembler {
 
         // Phase 4: Register remaps
         tree.addStep(MERGE_TILE_MAP_PHASE4, () -> {
-            System.out.println("Assembly Phase 4: Register remaps");
+            System.out.println("Assembly Phase 4: Declare remaps");
             for (FETileMap.TileMapEntry entry : entries) {
                 tree.addStep(PHASE4_REGISTER_REMAPS, () -> {
                     Map<Integer, Integer> registeredRemaps = new HashMap<>();
@@ -192,7 +192,7 @@ public class ICStepThroughAssemblerImpl implements ICStepThroughAssembler {
                         registeredRemaps.put(a, b);
                         this.addRemap(a, b);
                     });
-                    return new AssemblerStepResult(entry.getCoord(), registeredRemaps); // TODO: Add located registers to result
+                    return new AssemblerStepResult(entry.getCoord(), registeredRemaps);
                 });
             }
             return new AssemblerStepResult(); //TODO: Return something useful
@@ -200,16 +200,17 @@ public class ICStepThroughAssemblerImpl implements ICStepThroughAssembler {
 
         // Phase 5: Consume remaps
         tree.addStep(MERGE_TILE_MAP_PHASE5, () -> {
-            System.out.println("Assembly Phase 5: Remapping");
+            System.out.println("Assembly Phase 5: Consume remaps");
             for (FETileMap.TileMapEntry entry : entries) {
                 tree.addStep(PHASE5_CONSUME_REMAPS, () -> {
                     Map<Integer, Integer> consumedRemaps = new HashMap<>();
                     entry.getTile().consumeRemaps(a -> {
                         int b = ICStepThroughAssemblerImpl.this.getRemappedRegisterID(a);
-                        consumedRemaps.put(a, b);
+                        if (a != b)
+                            consumedRemaps.put(a, b);
                         return b;
                     });
-                    return new AssemblerStepResult(entry.getCoord(), consumedRemaps); // TODO: Add remaps to result
+                    return new AssemblerStepResult(entry.getCoord(), consumedRemaps);
                 });
             }
             return new AssemblerStepResult(); //TODO: Return something useful
@@ -223,7 +224,7 @@ public class ICStepThroughAssemblerImpl implements ICStepThroughAssembler {
                 tree.addStep(PHASE6_COLLECT, () -> {
                     CachedCollector collector = new CachedCollector();
                     entry.getTile().collect(collector);
-                    return new AssemblerStepResult(entry.getCoord(), collector.registerIds, collector.gateIds); // TODO: Return something useful
+                    return new AssemblerStepResult(entry.getCoord(), collector.registerIds, collector.gateIds);
                 });
             }
 
